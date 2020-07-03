@@ -1,6 +1,7 @@
 /** User class for message.ly */
 const db = require("../db");
 const ExpressError = require("../expressError");
+const { BCRYPT_WORK_FACTOR } = require("../config");
 
 
 /** User of the site. */
@@ -10,15 +11,17 @@ class User {
      *    {username, password, first_name, last_name, phone}
      */
     static async register({ username, password, first_name, last_name, phone }) {
+        const hashedPw = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
         const result = await db.query(
             `INSERT INTO users (
-              from_username,
-              to_username,
-              body,
-              sent_at)
-            VALUES ($1, $2, $3, current_timestamp)
-            RETURNING id, from_username, to_username, body, sent_at`,
-            [from_username, to_username, body]);
+              username,
+              password,
+              first_name,
+              last_name,
+              phone)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING username, password, first_name, last_name, phone`,
+            [username, hashedPw, first_name, last_name, phone]);
 
         return result.rows[0];
     }
