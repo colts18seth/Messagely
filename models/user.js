@@ -7,15 +7,20 @@ const { BCRYPT_WORK_FACTOR, SECRET_KEY } = require("../config");
 /** User of the site. */
 class User {
 
-    constructor(username, password, first_name, last_name, phone, join_at, last_login_at) {
-
-
+    constructor(username, password, first_name, last_name, phone) {
+        this.username = username;
+        this.password = password;
+        this.first_name = first_name;
+        this.last_name = last_name;
+        this.phone = phone;
+        this.join_at = new Date().toLocaleString();
+        this.last_login_at = new Date().toLocaleString();
     }
 
     /** register new user -- returns
      *    {username, password, first_name, last_name, phone}
      */
-    static async register({ username, password, first_name, last_name, phone }) {
+    static async register(username, password, first_name, last_name, phone) {
         const hashedPw = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
         const result = await db.query(
             `INSERT INTO users (

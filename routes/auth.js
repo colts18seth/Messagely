@@ -17,6 +17,7 @@ authRoutes.post("/login", async (req, res, next) => {
     }
 })
 
+
 /** POST /register - register user: registers, logs in, and returns token.
  *
  * {username, password, first_name, last_name, phone} => {token}.
@@ -26,8 +27,9 @@ authRoutes.post("/login", async (req, res, next) => {
 authRoutes.post("/register", async (req, res, next) => {
     try {
         const { username, password, first_name, last_name, phone } = req.body;
-        const result = await new User({ username, password, first_name, last_name, phone })
-        console.log(result)
+        const result = await new User(username, password, first_name, last_name, phone)
+        const
+        return res.json(result)
     }
     catch (e) {
         next(e)
