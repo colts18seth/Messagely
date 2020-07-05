@@ -1,19 +1,30 @@
 const express = require("express")
-const auth = require("../middleware/auth");
+const jwt = require("jsonwebtoken");
+const { SECRET_KEY } = require("../config");
 const User = require("../models/user");
-const authRoutes = new express.Router();
+const ExpressError = require("../expressError");
+const router = new express.Router();
 
 /** POST /login - login: {username, password} => {token}
  *
  * Make sure to update their last-login!
  *
  **/
-authRoutes.post("/login", async (req, res, next) => {
+router.post("/login", async (req, res, next) => {
     try {
-        console.log("login")
+        let { username, password } = req.body;
+        let result = await User.authenticate(username, password)
+
+        if (result) {
+            let token = jwt.sign({ username }, SECRET_KEY);
+            User.updateLoginTimestamp(username);
+            return res.json({ token });
+        } else {
+            throw new ExpressError("Invalid username/password", 400);
+        }
     }
     catch (e) {
-        next(e)
+        return next(e)
     }
 })
 
@@ -24,16 +35,16 @@ authRoutes.post("/login", async (req, res, next) => {
  *
  *  Make sure to update their last-login!
  */
-authRoutes.post("/register", async (req, res, next) => {
+router.post("/register", async (req, res, next) => {
     try {
-        const { username, password, first_name, last_name, phone } = req.body;
-        const result = await new User(username, password, first_name, last_name, phone)
-        const
-        return res.json(result)
+        let { username } = await User.register(req.body)
+        let token = jwt.sign({ username }, SECRET_KEY);
+        User.updateLoginTimestamp(username);
+        return res.json({ token });
     }
     catch (e) {
-        next(e)
+        return next(e)
     }
 })
 
-module.exports = authRoutes;
+module.exports = router;
